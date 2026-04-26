@@ -16,19 +16,14 @@ class AuditoriaMiddleware
 
         try {
 
-            $conteudoResposta = json_decode($response->getContent(), true);
-            $errosDetalhados = null;
-
-            if ($response->status() == 405 && isset($conteudoResposta['erros'])) {
-                $errosDetalhados = json_encode($conteudoResposta['erros']);
-            }
+            $detalhesTecnicos = $request->input('detalhes_tecnicos');
 
 
             $dadosLog = [
                 'metodo'          => $request->method(),
                 'endpoint'        => $request->path(),
-                'payload_envio'   => json_encode($request->all()),
-                'erros_validacao' => $errosDetalhados,
+                'payload_envio'   => json_encode($request->except('detalhes_tecnicos')),
+                'erros_validacao' => $detalhesTecnicos ? json_encode($detalhesTecnicos) : null,
                 'status_http'     => $response->status(),
                 'ip_origem'       => $request->ip(),
                 'created_at'      => now(),
@@ -38,10 +33,9 @@ class AuditoriaMiddleware
 
             DB::table('auditoria_logs')->insert($dadosLog);
 
-
             Log::info("AUDITORIA [" . $response->status() . "]: " . $request->method() . " " . $request->path(), [
-                'request' => $request->all(),
-                'validation_errors' => $conteudoResposta['erros'] ?? 'Nenhum erro de validação'
+                'envio' => $request->except('detalhes_tecnicos'),
+                'erro_detalhado' => $detalhesTecnicos ?? 'Operação realizada com sucesso'
             ]);
 
         } catch (\Exception $e) {

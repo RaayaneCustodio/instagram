@@ -12,32 +12,32 @@ class AuthController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'senha' => 'required',
+            'usuario' => 'required',
+            'senha'   => 'required',
         ]);
 
         if ($validator->fails()) {
+            request()->merge(['detalhes_tecnicos' => $validator->errors()->toArray()]);
             return response()->json([
                 "status"   => "erro",
                 "codigo"   => "DADOS_INVALIDOS",
-                "mensagem" => "E-mail e senha são obrigatórios."
+                "mensagem" => "Usuário e senha são obrigatórios."
             ], 405);
         }
 
-
         $credentials = [
-            'email'    => $request->email,
+            'usuario'  => $request->usuario,
             'password' => $request->senha
         ];
 
         if (!$token = auth('api')->attempt($credentials)) {
+            request()->merge(['detalhes_tecnicos' => ['login' => 'Credenciais inválidas.']]);
             return response()->json([
                 "status"   => "erro",
                 "codigo"   => "NAO_AUTORIZADO",
-                "mensagem" => "E-mail ou senha inválidos."
+                "mensagem" => "Usuário ou senha inválidos."
             ], 401);
         }
-
 
         $usuario = auth('api')->user();
 
@@ -53,6 +53,17 @@ class AuthController extends Controller
                     "email" => $usuario->email
                 ]
             ]
+        ], 200);
+    }
+
+    public function logout()
+    {
+        auth('api')->logout();
+
+        return response()->json([
+            "status"   => "sucesso",
+            "codigo"   => "LOGOUT_REALIZADO",
+            "mensagem" => "Logout realizado com sucesso"
         ], 200);
     }
 }
