@@ -13,32 +13,27 @@ class Usuario extends Authenticatable implements JWTSubject
     protected $table = 'usuarios';
 
     protected $fillable = [
-        'nome',
-        'biografia',
-        'usuario',
-        'senha',
-        'email',
-        'foto',
-        'ativo'
+        'nome', 'email', 'usuario', 'senha', 'biografia', 'foto', 'ativo'
     ];
 
     protected $hidden = [
         'senha',
     ];
 
-    public function getJWTIdentifier(){
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims(){
-        return[
-            'login' => $this->usuario
-        ];
-    }
 
     public function getAuthPassword()
     {
         return $this->senha;
     }
 
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

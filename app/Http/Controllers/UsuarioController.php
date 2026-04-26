@@ -17,11 +17,11 @@ class UsuarioController extends Controller
             'email'     => 'required|email|min:10|max:35|unique:usuarios,email',
             'usuario'   => 'required|min:3|max:30|unique:usuarios,usuario|regex:/^[a-z0-9_]+$/',
             'senha'     => 'required|min:8|max:24',
-            'biografia' => 'required|min:5|max:120',
+            'biografia' => 'required|max:150',
         ];
 
         $mensagens = [
-            'required'       => 'O campo :attribute é obrigatório.',
+            'required'       => 'O campo :attribute é obrigatorio.',
             'email.unique'   => 'Este e-mail já está sendo utilizado.',
             'usuario.unique' => 'Este nome de usuário já está em uso.',
             'nome.regex'     => 'O nome deve conter apenas letras.',
@@ -34,11 +34,13 @@ class UsuarioController extends Controller
         $validator = Validator::make($request->all(), $regras, $mensagens);
 
         if ($validator->fails()) {
+
+            request()->merge(['detalhes_tecnicos' => $validator->errors()->toArray()]);
+
             return response()->json([
                 "status"   => "erro",
                 "codigo"   => "DADOS_INVALIDOS",
-                "mensagem" => "Um ou mais campos não atendem aos requisitos de segurança.",
-                "erros"    => $validator->errors()
+                "mensagem" => "Um ou mais campos não atendem aos requisitos de segurança."
             ], 405);
         }
 
@@ -48,7 +50,7 @@ class UsuarioController extends Controller
                 'nome'      => $request->nome,
                 'email'     => $request->email,
                 'usuario'   => $request->usuario,
-                'senha'     => Hash::make($request->senha), // CRIPTOGRAFIA AQUI!
+                'senha'     => Hash::make($request->senha),
                 'biografia' => $request->biografia,
                 'foto'      => $request->foto ?? null,
                 'ativo'     => true
@@ -64,7 +66,6 @@ class UsuarioController extends Controller
                     "usuario" => $usuario->usuario
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 "status"   => "erro",
