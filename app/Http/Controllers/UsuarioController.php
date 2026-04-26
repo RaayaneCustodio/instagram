@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Validator;
 
 class UsuarioController extends Controller
 {
+    // RF01 - Cadastro
     public function store(Request $request)
     {
-
         $regras = [
             'nome'      => 'required|min:3|max:60|regex:/^[a-zA-Z\s]+$/',
             'email'     => 'required|email|min:10|max:35|unique:usuarios,email',
@@ -30,13 +30,10 @@ class UsuarioController extends Controller
             'email.email'    => 'Por favor, informe um endereço de e-mail válido.',
         ];
 
-
         $validator = Validator::make($request->all(), $regras, $mensagens);
 
         if ($validator->fails()) {
-
             request()->merge(['detalhes_tecnicos' => $validator->errors()->toArray()]);
-
             return response()->json([
                 "status"   => "erro",
                 "codigo"   => "DADOS_INVALIDOS",
@@ -45,7 +42,6 @@ class UsuarioController extends Controller
         }
 
         try {
-
             $usuario = Usuario::create([
                 'nome'      => $request->nome,
                 'email'     => $request->email,
@@ -73,5 +69,111 @@ class UsuarioController extends Controller
                 "mensagem" => "Erro ao processar o cadastro no servidor."
             ], 500);
         }
+    }
+
+    // RF08/Swagger - Listar usuários (com paginação)
+    public function index(Request $request)
+    {
+        $limite = $request->query('limite', 10);
+        $usuarios = Usuario::where('ativo', true)->paginate($limite);
+
+        if ($usuarios->isEmpty()) {
+            return response()->json([
+                "status" => "erro",
+                "codigo" => "NENHUM_USUARIO_ENCONTRADO",
+                "mensagem" => "Nenhum usuário encontrado"
+            ], 404);
+        }
+
+        return response()->json([
+            "status" => "sucesso",
+            "codigo" => "LISTAGEM_SUCESSO",
+            "mensagem" => "Usuários listados com sucesso",
+            "dados" => [
+                "total" => $usuarios->total(),
+                "pagina" => $usuarios->currentPage(),
+                "limite" => $usuarios->perPage(),
+                "usuarios" => $usuarios->map(function($u) {
+                    return [
+                        "id" => (string)$u->id,
+                        "nome" => $u->nome,
+                        "email" => $u->email,
+                        "usuario" => $u->usuario
+                    ];
+                })
+            ]
+        ], 200);
+    }
+
+    // RF10 - Obter dados por ID
+    public function show($id)
+    {
+        $usuario = Usuario::where('id', $id)->where('ativo', true)->first();
+
+        if (!$usuario) {
+            return response()->json([
+                "status"   => "erro",
+                "codigo"   => "USUARIO_NAO_ENCONTRADO",
+                "mensagem" => "Usuário não encontrado"
+            ], 404);
+        }
+
+        return response()->json([
+            "status"   => "sucesso",
+            "codigo"   => "USUARIO_ENCONTRADO",
+            "mensagem" => "Dados do usuário recuperados",
+            "dados"    => [
+                "id"        => (string)$usuario->id,
+                "nome"      => $usuario->nome,
+                "usuario"   => $usuario->usuario,
+                "email"     => $usuario->email,
+                "biografia" => $usuario->biografia,
+                "foto_url"  => $usuario->foto
+            ]
+        ], 200);
+    }
+
+    // RF09 - Atualizar Perfil
+    public function update(Request $request, $id)
+    {
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+            return response()->json(["status" => "erro", "mensagem" => "Usuário não encontrado"], 404);
+        }
+
+        // Apenas um exemplo simples, você pode adicionar as regras de RNF02 aqui depois
+        $usuario->update($request->only(['nome', 'email', 'usuario', 'biografia', 'foto']));
+
+        return response()->json([
+            "status" => "sucesso",
+            "codigo" => "USUARIO_ATUALIZADO",
+            "mensagem" => "Usuário atualizado com sucesso",
+            "dados" => [
+                "id" => (string)$usuario->id,
+                "nome" => $usuario->nome,
+                "email" => $usuario->email,
+                "usuario" => $usuario->usuario
+            ]
+        ], 200);
+    }
+
+    // RF01 - "Excluir" (Desativar) conta
+    public function destroy($id)
+    {
+        $usuario = Usuario::find($id);
+
+        if (!$usuario) {
+            return response()->json(["status" => "erro", "mensagem" => "Usuário não encontrado"], 404);
+        }
+
+        $usuario->update(['ativo' => false]);
+
+        return response()->json([
+            "status" => "sucesso",
+            "codigo" => "OPERACAO_SUCESSO",
+            "mensagem" => "Usuário deletado com sucesso",
+            "dados" => new \stdClass() // Retorna um objeto vazio {} como no Swagger
+        ], 200);
     }
 }

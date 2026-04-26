@@ -7,21 +7,23 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    | Aqui configuramos quem pode acessar sua API. Como você removeu o prefixo
+    | 'api' das rotas, alteramos o 'paths' para '*' para cobrir todas as URLs
+    | como /usuarios/login, /usuarios/logout, etc.
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+
+    'paths' => ['*', 'sanctum/csrf-cookie'],
+
 
     'allowed_methods' => ['*'],
+
 
     'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
+
 
     'allowed_headers' => ['*'],
 
