@@ -16,5 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// --- GRUPO DE USUÁRIOS ---
+
+
+Route::post('/usuarios/login', [AuthController::class, 'login']);
+
+
 Route::post('/usuarios', [UsuarioController::class, 'store']);
-Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::middleware('auth:api')->group(function () {
+
+    Route::post('/usuarios/logout', [AuthController::class, 'logout']);
+
+});
