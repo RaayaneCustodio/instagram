@@ -28,8 +28,8 @@ Route::post('/usuarios', [UsuarioController::class, 'store']);
 Route::middleware('auth:api')->group(function () {
     Route::post('/usuarios/logout', [AuthController::class, 'logout']);
 
-    Route::get('/usuarios', [UsuarioController::class, 'index']);      // Listar
-    Route::get('/usuarios/{id}', [UsuarioController::class, 'show']); // Obter um
-    Route::patch('/usuarios/{id}', [UsuarioController::class, 'update']); // Atualizar
-    Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']); // Deletar
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
+    Route::get('/usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::patch('/usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
 });

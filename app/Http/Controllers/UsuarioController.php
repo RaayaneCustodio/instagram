@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UsuarioController extends Controller
 {
-    // RF01 - Cadastro
+
     public function store(Request $request)
     {
         $regras = [
@@ -71,7 +71,7 @@ class UsuarioController extends Controller
         }
     }
 
-    // RF08/Swagger - Listar usuários (com paginação)
+
     public function index(Request $request)
     {
         $limite = $request->query('limite', 10);
@@ -105,7 +105,7 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // RF10 - Obter dados por ID
+
     public function show($id)
     {
         $usuario = Usuario::where('id', $id)->where('ativo', true)->first();
@@ -133,7 +133,6 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // RF09 - Atualizar Perfil
     public function update(Request $request, $id)
     {
         $usuario = Usuario::find($id);
@@ -142,7 +141,7 @@ class UsuarioController extends Controller
             return response()->json(["status" => "erro", "mensagem" => "Usuário não encontrado"], 404);
         }
 
-        // Apenas um exemplo simples, você pode adicionar as regras de RNF02 aqui depois
+
         $usuario->update($request->only(['nome', 'email', 'usuario', 'biografia', 'foto']));
 
         return response()->json([
@@ -158,7 +157,7 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // RF01 - "Excluir" (Desativar) conta
+
     public function destroy($id)
     {
         $usuario = Usuario::find($id);
@@ -173,7 +172,7 @@ class UsuarioController extends Controller
             "status" => "sucesso",
             "codigo" => "OPERACAO_SUCESSO",
             "mensagem" => "Usuário deletado com sucesso",
-            "dados" => new \stdClass() // Retorna um objeto vazio {} como no Swagger
+            "dados" => new \stdClass()
         ], 200);
     }
 }

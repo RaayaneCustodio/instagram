@@ -10,7 +10,6 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'usuario' => 'required',
             'senha'   => 'required',
@@ -41,6 +40,16 @@ class AuthController extends Controller
 
         $usuario = auth('api')->user();
 
+        // Verifica se o usuário está ativo (Blindagem extra)
+        if (!$usuario->ativo) {
+            auth('api')->logout();
+            return response()->json([
+                "status"   => "erro",
+                "codigo"   => "CONTA_DESATIVADA",
+                "mensagem" => "Esta conta foi excluída ou desativada."
+            ], 401);
+        }
+
         return response()->json([
             "status"   => "sucesso",
             "codigo"   => "LOGIN_SUCESSO",
@@ -56,14 +65,25 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('api')->logout();
+        try {
 
-        return response()->json([
-            "status"   => "sucesso",
-            "codigo"   => "LOGOUT_REALIZADO",
-            "mensagem" => "Logout realizado com sucesso"
-        ], 200);
+            auth('api')->logout();
+
+            return response()->json([
+                "status"   => "sucesso",
+                "codigo"   => "OPERACAO_SUCESSO",
+                "mensagem" => "Logout realizado com sucesso",
+                "dados"    => new \stdClass()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "status"   => "erro",
+                "codigo"   => "TOKEN_INVALIDO",
+                "mensagem" => "Não foi possível realizar o logout ou o token já expirou."
+            ], 401);
+        }
     }
 }
